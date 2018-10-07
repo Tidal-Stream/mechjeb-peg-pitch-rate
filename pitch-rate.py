@@ -9,9 +9,10 @@ muggc = 3.986004418e+14         # geocentric gravitational constant
 def exhaustVelocityFromISP(isp: float) -> float:
     return isp * g
 
-def simStage(x: float, y: float, vx: float, vy: float, stageTime: int, thrust: float, massEmpty: float, massPropellant: float, massFull: float, isp: float, pitchRateDeg: float) -> (float, float, float, float):
+def simStage(x: float, y: float, vx: float, vy: float, stageTime: float, thrust: float, massEmpty: float, massPropellant: float, massFull: float, isp: float, pitchRateDeg: float) -> (float, float, float, float):
     t = 0                       # time in sec
-    dt = 1
+    dt = 1                      # time step
+    dvexp = 0                   # delta-v expended
     mass = massFull
     velocityE = isp * g         # tsfc = 1 / velocityE
     dm = -(thrust / velocityE * dt)
@@ -26,14 +27,16 @@ def simStage(x: float, y: float, vx: float, vy: float, stageTime: int, thrust: f
     while t <= stageTime:
         rm3 = math.sqrt(x ** 2 + y ** 2) ** 3
 
-        uy = math.sin(pitch)            # velocity in meters/sec
+        uy = math.sin(pitch)            # thrust vector
         ux = math.cos(pitch)
 
+        ddvexp = (thrust / mass) * dt
         dx = vx * dt
         dy = vy * dt
         dvx = (-muggc * x / rm3 + thrust / mass * ux) * dt;
         dvy = (-muggc * y / rm3 + thrust / mass * uy) * dt;
 
+        dvexp += ddvexp
         x += dx
         y += dy
         vx += dvx
@@ -43,11 +46,14 @@ def simStage(x: float, y: float, vx: float, vy: float, stageTime: int, thrust: f
         pitch = math.atan2(vy, vx)
 
     print('x = {0:.0f} m'.format(x))
-    print('x - r0 = {0:.0f} m'.format(x - r0))
-    print('y = {0:.0f} m'.format(y))
-    print('vx = {0:.1f} m/s'.format(vx))
-    print('vy = {0:.1f} m/s'.format(vy))
+    print('x - r0 (altitude) = {0:.0f} m'.format(x - r0))
+    print('y (cross-range) = {0:.0f} m'.format(y))
+    print('vx (vertical speed) = {0:.1f} m/s'.format(vx))
+    print('vy (horizontal speed) = {0:.1f} m/s'.format(vy))
     print('pitch = {0:.1f} deg'.format(math.degrees(pitch)))
+    v = math.sqrt(vx ** 2 + vy ** 2)
+    print('speed = {0:.1f} m/s'.format(v))
+    print('delta-v expended = {0:.1f} m/s'.format(dvexp))
     return (x, y, vx, vy)
 
 
