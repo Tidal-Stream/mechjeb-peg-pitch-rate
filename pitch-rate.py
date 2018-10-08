@@ -14,7 +14,7 @@ def simStage(x: float, y: float, vx: float, vy: float, stageTime: float,
         massFull: float, isp: float, pitchStart: float, pitchEnd: float,
         pitchRateDeg: float) -> (float, float, float, float):
     t = 0                       # time in sec
-    dt = 1                      # time step
+    dt = 0.02                   # time step
     dvexp = 0                   # delta-v expended
     mass = massFull
     velocityE = isp * g         # tsfc = 1 / velocityE
@@ -47,10 +47,12 @@ def simStage(x: float, y: float, vx: float, vy: float, stageTime: float,
         mass += dm
         t += dt
 
-        if pitchStart < t:          # vertical ascent
+        if t < pitchStart:          # vertical ascent
             continue
         if t < pitchEnd:            # pitch program
             pitch += pitchRate * dt
+            continue
+        if t + 1 < pitchEnd:        # stabilise
             continue
         pitch = math.atan2(vy, vx)  # gravity turn
 
@@ -70,7 +72,7 @@ def main():
     stage1Empty = 21_054 + 2_316 + 20_830
     stage1Propellant = 284_089
     stage1Full = stage1Empty + stage1Propellant
-    simStage(r0, 0, 0, 0, 253, 3_827_000, stage1Empty, stage1Propellant, stage1Full, 311.3, 10, 20, 4.8)
+    simStage(r0, 0, 0, 0, 253, 3_827_000, stage1Empty, stage1Propellant, stage1Full, 311.3, 10, 20, 0.0153)
 
 
 if __name__ == '__main__':
