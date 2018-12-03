@@ -20,7 +20,8 @@ def simStage(x: float, y: float, vx: float, vy: float, stageTime: float,
     velocityE = isp * g         # tsfc = 1 / velocityE
     dm = -(thrust / velocityE * dt)
     pitchRate = math.radians(pitchRateDeg)
-    pitch = 0                   # vertical ascent
+    pitch = 0 if abs(vx) < 1 and abs(vy) < 1 \
+            else math.atan2(vy, vx)  # vertical ascent
 
     # loop with some small dt, thrust is constant thrust (in Newtons -- not
     # kN), g is 9.8 m/s, mdot is based on thrust and ISP (should be in kg/sec)
@@ -72,7 +73,8 @@ def main():
     stage1Empty = 21_054 + 2_316 + 20_830
     stage1Propellant = 284_089
     stage1Full = stage1Empty + stage1Propellant
-    simStage(r0, 0, 0, 0, 253, 3_827_000, stage1Empty, stage1Propellant, stage1Full, 311.3, 10, 20, 0.0153)
+    (x, y, vx, vy) = simStage(r0, 0, 0, 0, 253, 3_827_000, stage1Empty, stage1Propellant, stage1Full, 311.3, 10, 20, 0.0153)
+    (x, y, vx, vy) = simStage(x, y, vx, vy, 253, 3_827_000, stage1Empty, stage1Propellant, stage1Full, 311.3, 0, 0, 0)
 
 
 if __name__ == '__main__':
